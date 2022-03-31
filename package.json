@@ -1,0 +1,27 @@
+{
+  "name": "columnscroll-codrops",
+  "version": "1.0.0",
+  "description": "<span style=\"color:red\">Used for learning purpose.\r There are some of my notes commented out in JS files.\\\r <span>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stankovics/ColumnScrollByCodrops.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stankovics/ColumnScrollByCodrops/issues"
+  },
+  "homepage": "https://github.com/stankovics/ColumnScrollByCodrops#readme",
+  "devDependencies": {
+    "parcel": "^2.4.0"
+  },
+  "dependencies": {
+    "gsap": "^3.10.1",
+    "imagesloaded": "^5.0.0",
+    "locomotive-scroll": "^4.1.4"
+  }
+}
