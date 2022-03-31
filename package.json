@@ -4,7 +4,10 @@
   "description": "<span style=\"color:red\">Used for learning purpose.\r There are some of my notes commented out in JS files.\\\r <span>",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "parcel src/index.html --open",
+    "clean": "rm -rf dist/*",
+    "build:parcel": "parcel build src/index.html --no-content-hash --no-source-maps --public-url ./",
+    "build": "npm run clean && npm run build:parcel"
   },
   "repository": {
     "type": "git",
