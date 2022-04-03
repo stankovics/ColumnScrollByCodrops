@@ -1059,10 +1059,27 @@ class Grid {
         // Locomotive scroll event: translate the first and third grid column -1*scrollValue px.
         this.lscroll.on('scroll', (obj)=>{
             this.lastscroll = obj.scroll.y;
-            this.DOM.oddColumns.forEach((column)=>column.style.transform = `translateY(${obj.scroll.y}px)`
+            this.DOM.oddColumns.forEach((column)=>column.style.transform = `translateY(${this.lastscroll}px)`
             );
         });
     }
+    /**
+   * Initialize events
+   */ initEvents() {
+        // For every grid item
+        for (const [position, gridItem] of this.gridItemArr.entries())// Open the gridItem and reveal its content
+        gridItem.DOM.img.outer.addEventListener('click', ()=>{
+            if (!this.isGridView || this.isAnimating || document.documentElement.classList.contains('has-scroll-scrolling')) return false;
+            this.isAnimating = true;
+            this.isGridView = false;
+            // Update currentGridItem
+            this.currentGridItem = position;
+            // Stop/Destroy Locomotive scroll
+            this.lscroll.destroy();
+            this.showContent(gridItem);
+        });
+    }
+    showContent(gridItem) {}
 }
 
 },{"./utils":"72Dku","locomotive-scroll":"iDXE3","gsap":"fPSuC","./contentItem":"3KOIn","./gridItem":"csHCv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iDXE3":[function(require,module,exports) {
