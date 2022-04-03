@@ -1,5 +1,5 @@
 /**
- * Class reoresenting a content item (.content__item)
+ * Class representing a content item (.content__item).
  */
 export class ContentItem {
   // DOM elements
@@ -13,13 +13,12 @@ export class ContentItem {
   };
 
   /**
-   * Constructor
-   * @param {Element} DOM_el - the .content__item element
+   * Constructor.
+   * @param {Element} DOM_el - the .content__item element.
    */
-
   constructor(DOM_el) {
     this.DOM.el = DOM_el;
-    this.DOM.title = this.DOM.el.querySelector('content__item-title');
-    this.DOM.text = this.DOM.el.querySelector('content__item-text');
+    this.DOM.title = this.DOM.el.querySelector('.content__item-title');
+    this.DOM.text = this.DOM.el.querySelector('.content__item-text');
   }
 }

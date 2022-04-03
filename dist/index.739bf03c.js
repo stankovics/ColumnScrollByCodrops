@@ -7587,7 +7587,7 @@ _gsapCoreJs.gsap.registerPlugin(CSSPlugin);
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * Class reoresenting a content item (.content__item)
+ * Class representing a content item (.content__item).
  */ parcelHelpers.export(exports, "ContentItem", ()=>ContentItem
 );
 class ContentItem {
@@ -7601,12 +7601,12 @@ class ContentItem {
         text: null
     };
     /**
-   * Constructor
-   * @param {Element} DOM_el - the .content__item element
+   * Constructor.
+   * @param {Element} DOM_el - the .content__item element.
    */ constructor(DOM_el){
         this.DOM.el = DOM_el;
-        this.DOM.title = this.DOM.el.querySelector('content__item-title');
-        this.DOM.text = this.DOM.el.querySelector('content__item-text');
+        this.DOM.title = this.DOM.el.querySelector('.content__item-title');
+        this.DOM.text = this.DOM.el.querySelector('.content__item-text');
     }
 }
 
@@ -7620,7 +7620,7 @@ parcelHelpers.defineInteropFlag(exports);
 class GridItem {
     // DOM elements
     DOM = {
-        // Main element (.column__item)
+        // main element (.column__item)
         el: null,
         // The image element
         img: {
@@ -7634,17 +7634,16 @@ class GridItem {
         // The ContentItem instance
         contentItem: null
     };
-    // Position on the grid
-    postion = -1;
+    // Position on the grid.
+    position = -1;
     /**
-   * Constructor
+   * Constructor.
    * @param {Element} DOM_el - the .column__item element
-   *
-   * */ constructor(DOM_el){
+   */ constructor(DOM_el){
         this.DOM.el = DOM_el;
         this.DOM.img.outer = this.DOM.el.querySelector('.column__item-imgwrap');
         this.DOM.img.inner = this.DOM.el.querySelector('.column__item-img');
-        this.postion = Number(this.DOM.img.outer.dataset.pos) - 1;
+        this.position = Number(this.DOM.img.outer.dataset.pos) - 1;
         this.DOM.caption = this.DOM.el.querySelector('figcaption');
     }
 }
