@@ -134,5 +134,82 @@ export class Grid {
       el => el != gridItem && el.DOM.el.classList.contains('.in-view')
     );
     // Remaining (not in the viewport)
+    this.remainingGridItem = this.gridItemArr
+      .filter(el => !this.viewportGridItems.includes(el) && el != gridItem)
+      .map(gridItem => gridItem.DOM.el);
+
+    // image outer elements
+    this.viewportGridItemsImgOuter = this.viewportGridItems.map(
+      gridItem => gridItem.DOM.img.outer
+    );
+    // Calculate the transform to apply to the gridItem's image .
+    const imageTransform = this.calcTransformImage();
+
+    gsap.killTweensOf([gridItem.DOM.img.outer, gridItem.DOM.img.inner]);
+    this.timeline = gsap.timeline({
+      defaults: {
+        duration: 1.4,
+        ease: 'expo.inOut',
+      },
+      // overflow hidden
+    });
+  }
+  /**
+   * Calculates the scale value to apply to the images that animate to the .content__nav area (scale down to the size of a nav area item).
+   * @param {Element} gridItemImageOuter - the gridItem image outer element.
+   * @return {Number} the scale value.
+   */
+  getFinalScaleValue(gridItemImageOuter) {
+    return (
+      this.DOM.contentNavItems[0].offsetHeight / gridItemImageOuter.offsetHeight
+    );
+  }
+
+  /**
+   * Calculates the translate value to apply to the images that animate to the .content__nav area (position it on the nav area).
+   * @param {Element} gridItemImageOuter - the gridItem image outer element.
+   * @param {Number} position - the gridItem's position.
+   * @return {JSON} the translation values.
+   */
+  getFinalTranslationValue(gridItemImageOuter, position) {
+    const imgrect = adjustedBoundingRect(gridItemImageOuter);
+    const navrect = adjustedBoundingRect(this.DOM.contentNavItems[position]);
+    return {
+      x: navrect.left + navrect.width / 2 - (imgrect.left + imgrect.width / 2),
+      y: navrect.top + navrect.height / 2 - (imgrect.top + imgrect.height / 2),
+    };
+  }
+
+  /**
+   * Track which items are visible (inside the viewport)
+   * by adding/removing the 'in-view' class when scrolling.
+   * This will be used to animate only the ones that are visible.
+   */
+  trackVisibleItems() {
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.intersectionRatio > 0) {
+          entry.target.classList.add('in-view');
+        } else {
+          entry.target.classList.remove('in-view');
+        }
+      });
+    });
+    this.DOM.gridItems.forEach(item => observer.observe(item));
+  }
+  /**
+   * Calculates the scale and translation values to apply to the images when we click on it (scale up and center it).
+   * Also used to recalculate those values on resize.
+   * @return {JSON} the translation and scale values
+   */
+  calcTransformImage() {
+    const imgrect = adjustedBoundingRect(
+      this.gridItemArr[this.currentGridItem].DOM.img.outer
+    );
+    return {
+      scale: (winsize.height * 0.7) / imgrect.height,
+      x: winsize.width * 0.5 - (imgrect.left + imgrect.width / 2),
+      y: winsize.height * 0.5 - (imgrect.top + imgrect.height / 2),
+    };
   }
 }
