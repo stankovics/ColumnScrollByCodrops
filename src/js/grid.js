@@ -128,5 +128,11 @@ export class Grid {
       });
     }
   }
-  showContent(gridItem) {}
+  showContent(gridItem) {
+    // All the other (that are inside the viewport)
+    this.viewportGridItems = this.gridItemArr.filter(
+      el => el != gridItem && el.DOM.el.classList.contains('.in-view')
+    );
+    // Remaining (not in the viewport)
+  }
 }
