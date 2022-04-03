@@ -1036,6 +1036,14 @@ class Grid {
     }
     /**
    * Initialize the locomotive scroll
+   * el: Scroll container element
+   * smooth: Smooth scrolling, boolean type
+   * lerp: Linear interpolation (lerp) intensity. Float between 0 and 1. This defines the "smoothness" intensity. The closer to 0, the smoother.
+   * smartphone & tablet: Object allowing to override some options for a particular context. You can specify:
+   - smooth
+   - direction
+   - horizontalGesture
+   For tablet context you can also define breakpoint (integer, defaults to 1024) to    set the max-width breakpoint for tablets.
    */ initSmoothScroll() {
         this.lscroll = new _locomotiveScrollDefault.default({
             el: this.DOM.el,
@@ -1048,7 +1056,30 @@ class Grid {
                 smooth: true
             }
         });
+        // Locomotive scroll event: translate the first and third grid column -1*scrollValue px.
+        this.lscroll.on('scroll', (obj)=>{
+            this.lastscroll = obj.scroll.y;
+            this.DOM.oddColumns.forEach((column)=>column.style.transform = `translateY(${this.lastscroll}px)`
+            );
+        });
     }
+    /**
+   * Initialize events
+   */ initEvents() {
+        // For every grid item
+        for (const [position, gridItem] of this.gridItemArr.entries())// Open the gridItem and reveal its content
+        gridItem.DOM.img.outer.addEventListener('click', ()=>{
+            if (!this.isGridView || this.isAnimating || document.documentElement.classList.contains('has-scroll-scrolling')) return false;
+            this.isAnimating = true;
+            this.isGridView = false;
+            // Update currentGridItem
+            this.currentGridItem = position;
+            // Stop/Destroy Locomotive scroll
+            this.lscroll.destroy();
+            this.showContent(gridItem);
+        });
+    }
+    showContent(gridItem) {}
 }
 
 },{"./utils":"72Dku","locomotive-scroll":"iDXE3","gsap":"fPSuC","./contentItem":"3KOIn","./gridItem":"csHCv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iDXE3":[function(require,module,exports) {
