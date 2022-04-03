@@ -961,16 +961,16 @@ exports.export = function(dest, destName, get) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * Grid Class represents a grid of items
+ * Class representing a grid of items
  */ parcelHelpers.export(exports, "Grid", ()=>Grid
 );
 var _utils = require("./utils");
 var _locomotiveScroll = require("locomotive-scroll");
 var _locomotiveScrollDefault = parcelHelpers.interopDefault(_locomotiveScroll);
-var _gsap = require("gsap");
-var _contentItem = require("./contentItem");
 var _gridItem = require("./gridItem");
-// Body element
+var _contentItem = require("./contentItem");
+var _gsap = require("gsap");
+// body element
 const bodyEl = document.body;
 // Calculate the viewport size
 let winsize = _utils.calcWinsize();
@@ -981,69 +981,67 @@ class Grid {
     DOM = {
         // main element (.columns)
         el: null,
-        // The .column elements (odd columns) that will animate to the opposite scroll direction
+        // The .column elements (odd columns) that eill animate to the opposite scroll direction
         oddColumns: null,
         // .column__item
         gridItems: null,
         // .content
         content: document.querySelector('.content'),
-        // content__item
+        // .content__item
         contentItems: document.querySelectorAll('.content__item'),
         // .heading
         heading: {
             top: document.querySelector('.heading--up'),
             bottom: document.querySelector('.heading--down')
         },
-        // button-back
+        // .button-back button
         backCtrl: document.querySelector('.button-back'),
         // .content__nav
-        contentNav: document.querySelector('.content__nav-item')
+        contentNav: document.querySelector('.content__nav'),
+        // For demo purposes only (proof of concept).
+        // .content__nav-item
+        contentNavItems: document.querySelectorAll('.content__nav-item')
     };
-    // GridItem instances array
+    // GridItem instances array.
     gridItemArr = [];
-    // index of current grid item
+    // Index of current GridItem.
     currentGridItem = -1;
-    // Checks if in grid mode or if in content mode
+    // Checks if in grid mode or if in content mode.
     isGridView = true;
-    // Checks for active animation
+    // Checks for active animation.
     isAnimating = false;
-    // Scroll chaced value
+    // Scroll cached value
     lastscroll = 0;
     /**
-   * Constructor
-   * @param {Element} DOM_el - teh .columns element
+   * Constructor.
+   * @param {Element} DOM_el - the .columns element
    */ constructor(DOM_el){
         this.DOM.el = DOM_el;
-        // first and third/odd columns
+        // first and third columns
         this.DOM.oddColumns = [
             ...this.DOM.el.querySelectorAll('.column')
         ].filter((_, index)=>index != 1
         );
-        // grid items(figure.column__item)
+        // grid items (figure.column__item)
         this.DOM.gridItems = [
-            ...this.DOM.el.querySelectorAll('.colomn__item')
+            ...this.DOM.el.querySelectorAll('.column__item')
         ];
         // Assign a ContentItem to each GridItem
         this.DOM.gridItems.forEach((gridItem)=>{
             const newItem = new _gridItem.GridItem(gridItem);
             this.gridItemArr.push(newItem);
             // The ContentItem instance
-            newItem.contentItem = new _contentItem.ContentItem(this.DOM.contentItems[newItem.postion]);
+            newItem.contentItem = new _contentItem.ContentItem(this.DOM.contentItems[newItem.position]);
         });
-    // Initialize the Locomotive scroll
-    // Initialize the events on the page
-    // Track which items are visible
+        // Initialize the Locomotive scroll
+        this.initSmoothScroll();
+        // Initialize the events on the page.
+        this.initEvents();
+        // Track which items are visible
+        this.trackVisibleItems();
     }
     /**
-   * Initialize the locomotive scroll
-   * el: Scroll container element
-   * smooth: Smooth scrolling, boolean type
-   * lerp: Linear interpolation (lerp) intensity. Float between 0 and 1. This defines the "smoothness" intensity. The closer to 0, the smoother.
-   * smartphone & tablet: Object allowing to override some options for a particular context. You can specify:
-   - smooth
-   - direction
-   - horizontalGesture
-   For tablet context you can also define breakpoint (integer, defaults to 1024) to    set the max-width breakpoint for tablets.
+   * Initialize the Locomotive scroll.
    */ initSmoothScroll() {
         this.lscroll = new _locomotiveScrollDefault.default({
             el: this.DOM.el,
@@ -1057,34 +1055,137 @@ class Grid {
             }
         });
         // Locomotive scroll event: translate the first and third grid column -1*scrollValue px.
-        this.lscroll.on('scroll', (obj)=>{
+        /**
+     * scroll event has obj arrgument that returns position, limit, speed, direction and current in-view elements
+     * inside obj there is scroll object with x and y coordinates console.log(obj);
+     */ this.lscroll.on('scroll', (obj)=>{
             this.lastscroll = obj.scroll.y;
             this.DOM.oddColumns.forEach((column)=>column.style.transform = `translateY(${this.lastscroll}px)`
             );
         });
     }
     /**
-   * Initialize events
+   * Initialize the events.
    */ initEvents() {
-        // For every grid item
-        for (const [position, gridItem] of this.gridItemArr.entries())// Open the gridItem and reveal its content
-        gridItem.DOM.img.outer.addEventListener('click', ()=>{
-            if (!this.isGridView || this.isAnimating || document.documentElement.classList.contains('has-scroll-scrolling')) return false;
+        // For every GridItem
+        for (const [position1, gridItem] of this.gridItemArr.entries()){
+            // Open the gridItem and reveal its content
+            gridItem.DOM.img.outer.addEventListener('click', ()=>{
+                if (!this.isGridView || this.isAnimating || document.documentElement.classList.contains('has-scroll-scrolling')) return false;
+                this.isAnimating = true;
+                this.isGridView = false;
+                // Update currentGridItem
+                this.currentGridItem = position1;
+                // Stop/Destroy the Locomotive scroll
+                this.lscroll.destroy();
+                this.showContent(gridItem);
+            });
+            // Hovering on the grid item's image outer.
+            gridItem.DOM.img.outer.addEventListener('mouseenter', ()=>{
+                if (!this.isGridView || this.isAnimating) return false;
+                _gsap.gsap.killTweensOf([
+                    gridItem.DOM.img.outer,
+                    gridItem.DOM.img.inner
+                ]);
+                _gsap.gsap.timeline({
+                    defaults: {
+                        duration: 1.4,
+                        ease: 'expo'
+                    },
+                    onComplete: ()=>_gsap.gsap.set([
+                            gridItem.DOM.img.outer,
+                            gridItem.DOM.img.inner
+                        ], {
+                            willChange: ''
+                        })
+                }).addLabel('start', 0).set([
+                    gridItem.DOM.img.outer,
+                    gridItem.DOM.img.inner
+                ], {
+                    willChange: 'transform'
+                }, 'start').to(gridItem.DOM.img.outer, {
+                    scaleY: 0.95,
+                    scaleX: 0.88
+                }, 'start').to(gridItem.DOM.img.inner, {
+                    ease: 'power4',
+                    scaleY: 1.2,
+                    scaleX: 1.7
+                }, 'start');
+            });
+            // Hovering out will reverse the scale values.
+            gridItem.DOM.img.outer.addEventListener('mouseleave', ()=>{
+                if (!this.isGridView || this.isAnimating) return false;
+                _gsap.gsap.killTweensOf([
+                    gridItem.DOM.img.outer,
+                    gridItem.DOM.img.inner
+                ]);
+                _gsap.gsap.timeline({
+                    defaults: {
+                        duration: 1.4,
+                        ease: 'expo'
+                    },
+                    onComplete: ()=>_gsap.gsap.set([
+                            gridItem.DOM.img.outer,
+                            gridItem.DOM.img.inner
+                        ], {
+                            willChange: ''
+                        })
+                }).addLabel('start', 0).set([
+                    gridItem.DOM.img.outer,
+                    gridItem.DOM.img.inner
+                ], {
+                    willChange: 'transform'
+                }, 'start').to([
+                    gridItem.DOM.img.outer,
+                    gridItem.DOM.img.inner
+                ], {
+                    scale: 1
+                }, 0);
+            });
+        }
+        // Recalculate current image transform
+        window.addEventListener('resize', ()=>{
+            if (this.isGridView) return false;
+            // Calculate the transform to apply to the current grid item image
+            const imageTransform = this.calcTransformImage();
+            _gsap.gsap.set(this.gridItemArr[this.currentGridItem].DOM.img.outer, {
+                scale: imageTransform.scale,
+                x: imageTransform.x,
+                y: imageTransform.y
+            });
+            // Adjust the transform value for all the other grid items that moved to the thumbnails area.
+            for (const [position, viewportGridItem, ] of this.viewportGridItems.entries()){
+                const imgOuter = viewportGridItem.DOM.img.outer;
+                _gsap.gsap.set(viewportGridItem.DOM.img.outer, {
+                    scale: this.getFinalScaleValue(imgOuter),
+                    x: this.getFinalTranslationValue(imgOuter, position).x,
+                    y: this.getFinalTranslationValue(imgOuter, position).y
+                });
+            }
+        });
+        // Close the current item's content and reveal back the grid.
+        this.DOM.backCtrl.addEventListener('click', ()=>{
+            if (this.isGridView || this.isAnimating) return false;
             this.isAnimating = true;
-            this.isGridView = false;
-            // Update currentGridItem
-            this.currentGridItem = position;
-            // Stop/Destroy Locomotive scroll
-            this.lscroll.destroy();
-            this.showContent(gridItem);
+            this.isGridView = true;
+            // Restart the Locomotive scroll
+            this.initSmoothScroll();
+            this.lscroll.scrollTo(this.lastscroll, {
+                duration: 0,
+                disableLerp: true
+            });
+            this.closeContent();
         });
     }
-    showContent(gridItem1) {
+    /**
+   * Scale up the image and reveal its content.
+   * @param {GridItem} gridItem - the gridItem element.
+   */ showContent(gridItem1) {
         // All the other (that are inside the viewport)
-        this.viewportGridItems = this.gridItemArr.filter((el)=>el != gridItem1 && el.DOM.el.classList.contains('.in-view')
+        this.viewportGridItems = this.gridItemArr.filter((el)=>el != gridItem1 && el.DOM.el.classList.contains('in-view')
         );
         // Remaining (not in the viewport)
-        this.remainingGridItem = this.gridItemArr.filter((el)=>!this.viewportGridItems.includes(el) && el != gridItem1
+        this.remainingGridItems = this.gridItemArr.filter((el)=>!this.viewportGridItems.includes(el) && el != gridItem1
         ).map((gridItem)=>gridItem.DOM.el
         );
         // image outer elements
@@ -1100,8 +1201,182 @@ class Grid {
             defaults: {
                 duration: 1.4,
                 ease: 'expo.inOut'
+            },
+            // overflow hidden
+            onStart: ()=>bodyEl.classList.add('oh')
+            ,
+            onComplete: ()=>{
+                // Hide all other grid items from the grid.
+                _gsap.gsap.set(this.remainingGridItems, {
+                    opacity: 0
+                });
+                this.isAnimating = false;
             }
-        });
+        }).addLabel('start', 0).set([
+            gridItem1.DOM.el,
+            gridItem1.DOM.el.parentNode.parentNode
+        ], {
+            zIndex: 100
+        }, 'start').set([
+            gridItem1.DOM.img.outer,
+            gridItem1.DOM.img.inner,
+            this.viewportGridItemsImgOuter, 
+        ], {
+            willChange: 'transform, opacity'
+        }, 'start').to(this.DOM.heading.top, {
+            y: '-200%',
+            scaleY: 4
+        }, 'start').to(this.DOM.heading.bottom, {
+            y: '200%',
+            scaleY: 4
+        }, 'start+=0.05').to(gridItem1.DOM.img.outer, {
+            scale: imageTransform.scale,
+            x: imageTransform.x,
+            y: imageTransform.y,
+            onComplete: ()=>_gsap.gsap.set(gridItem1.DOM.img.outer, {
+                    willChange: ''
+                })
+        }, 'start').to(gridItem1.DOM.img.inner, {
+            scale: 1,
+            onComplete: ()=>_gsap.gsap.set(gridItem1.DOM.img.inner, {
+                    willChange: ''
+                })
+        }, 'start').add(()=>{
+            _gsap.gsap.set(this.DOM.contentNavItems, {
+                y: `${_gsap.gsap.utils.random(100, 300)}%`,
+                opacity: 0
+            });
+        }, 'start');
+        for (const [position, viewportGridItem, ] of this.viewportGridItems.entries()){
+            const imgOuter = viewportGridItem.DOM.img.outer;
+            this.timeline.to([
+                viewportGridItem.DOM.caption,
+                gridItem1.DOM.caption
+            ], {
+                ease: 'expo',
+                opacity: 0,
+                delay: 0.03 * position
+            }, 'start').to(viewportGridItem.DOM.img.outer, {
+                scale: this.getFinalScaleValue(imgOuter),
+                x: this.getFinalTranslationValue(imgOuter, position).x,
+                y: this.getFinalTranslationValue(imgOuter, position).y,
+                onComplete: ()=>_gsap.gsap.set(imgOuter, {
+                        willChange: ''
+                    })
+                ,
+                delay: 0.03 * position
+            }, 'start');
+        }
+        this.timeline.addLabel('showContent', 'start+=0.2').to([
+            ...this.DOM.contentNavItems
+        ].slice(this.viewportGridItems.length + 1), {
+            y: '0%',
+            opacity: 1,
+            delay: (pos)=>0.03 * pos
+        }, 'showContent').add(()=>{
+            gridItem1.contentItem.DOM.el.classList.add('content__item--current');
+            bodyEl.classList.add('view-content');
+        }, 'showContent').to([
+            this.DOM.backCtrl,
+            this.DOM.contentNav,
+            gridItem1.contentItem.DOM.text
+        ], {
+            opacity: 1
+        }, 'showContent').to(gridItem1.contentItem.DOM.title, {
+            opacity: 1,
+            startAt: {
+                y: '-100%',
+                scaleY: 3
+            },
+            y: '0%',
+            scaleY: 1
+        }, 'showContent');
+    }
+    /**
+   * Scale down the image and reveal the grid again.
+   */ closeContent() {
+        // Current grid item
+        const gridItem2 = this.gridItemArr[this.currentGridItem];
+        _gsap.gsap.timeline({
+            defaults: {
+                duration: 1.4,
+                ease: 'expo.inOut'
+            },
+            // overflow hidden
+            onStart: ()=>{
+                // Show all other grid items in the grid.
+                _gsap.gsap.set(this.remainingGridItems, {
+                    opacity: 1
+                });
+                bodyEl.classList.remove('oh');
+            },
+            onComplete: ()=>{
+                this.isAnimating = false;
+            }
+        }).addLabel('start', 0).to([
+            this.DOM.backCtrl,
+            this.DOM.contentNav,
+            gridItem2.contentItem.DOM.text
+        ], {
+            opacity: 0
+        }, 'start').to(gridItem2.contentItem.DOM.title, {
+            opacity: 0,
+            y: '-100%',
+            scaleY: 3
+        }, 'start').to([
+            ...this.DOM.contentNavItems
+        ].slice(this.viewportGridItems.length + 1), {
+            y: `${_gsap.gsap.utils.random(100, 300)}%`,
+            opacity: 0,
+            delay: (pos)=>-0.03 * pos
+            ,
+            onComplete: ()=>bodyEl.classList.remove('view-content')
+        }, 'start').add(()=>gridItem2.contentItem.DOM.el.classList.remove('content__item--current')
+        ).set([
+            gridItem2.DOM.img.outer,
+            this.viewportGridItemsImgOuter
+        ], {
+            willChange: 'transform, opacity'
+        }, 'start').to(gridItem2.DOM.img.outer, {
+            scale: 1,
+            x: 0,
+            y: 0,
+            onComplete: ()=>{
+                _gsap.gsap.set(gridItem2.DOM.img.outer, {
+                    willChange: ''
+                });
+                _gsap.gsap.set([
+                    gridItem2.DOM.el,
+                    gridItem2.DOM.el.parentNode.parentNode
+                ], {
+                    zIndex: 1
+                });
+            }
+        }, 'start').to(this.viewportGridItemsImgOuter, {
+            scale: 1,
+            x: 0,
+            y: 0,
+            stagger: (pos)=>-0.03 * pos
+            ,
+            onComplete: ()=>{
+                _gsap.gsap.set(this.viewportGridItemsImgOuter, {
+                    willChange: ''
+                });
+            }
+        }, 'start').addLabel('showGrid', 'start+=0.2').to([
+            this.DOM.heading.top,
+            this.DOM.heading.bottom
+        ], {
+            y: '0%',
+            scaleY: 1
+        }, 'showGrid').to([
+            this.viewportGridItems.map((gridItem)=>gridItem.DOM.caption
+            ),
+            gridItem2.DOM.caption, 
+        ], {
+            ease: 'power4.in',
+            opacity: 1
+        }, 'showGrid');
     }
     /**
    * Calculates the scale value to apply to the images that animate to the .content__nav area (scale down to the size of a nav area item).
