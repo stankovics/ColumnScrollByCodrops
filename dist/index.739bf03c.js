@@ -1079,7 +1079,12 @@ class Grid {
             this.showContent(gridItem);
         });
     }
-    showContent(gridItem) {}
+    showContent(gridItem) {
+        // All the other (that are inside the viewport)
+        this.viewportGridItems = this.gridItemArr.filter((el)=>el != gridItem && el.DOM.el.classList.contains('.in-view')
+        );
+    // Remaining (not in the viewport)
+    }
 }
 
 },{"./utils":"72Dku","locomotive-scroll":"iDXE3","gsap":"fPSuC","./contentItem":"3KOIn","./gridItem":"csHCv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iDXE3":[function(require,module,exports) {
